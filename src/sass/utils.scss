@@ -1,0 +1,13 @@
+/** 
+* @param {String} $name - `zoom-in` or `zoom-in-white` etc.
+* @returns {String} The SVG string
+*/
+@function getSVG($name) {
+    $result: "";
+    @each $k, $v in $ctrl-icons {
+        @if "#{$name}-icon" == $k {
+            $result: $v;
+        }
+    }
+    @return $result;
+}
