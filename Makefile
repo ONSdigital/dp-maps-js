@@ -28,6 +28,6 @@ test:
 docs:
 	npm run docs
 
-.PHONY release
+.PHONY: release
 release:
 	npm run release
