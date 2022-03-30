@@ -61,6 +61,18 @@
       "json",
       "jsx"
    ],
+   "coveragePathIgnorePatterns": [
+    "/node_modules/",
+    "<rootDir>/configs/",
+    "<rootDir>/src/sass/",
+    "<rootDir>/lib/",
+    "<rootDir>/ci/",
+    "<rootDir>/webpack/",
+    ".json",
+    ".md",
+    "Makefile",
+    ".github"
+  ],
     "testEnvironment": "jsdom"
   },
   "peerDependencies": {
