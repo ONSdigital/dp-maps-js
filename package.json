@@ -54,6 +54,13 @@
     "transform": {
       "^.+\\.ts?$": "ts-jest"
     },
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "json",
+      "jsx"
+   ],
     "testEnvironment": "jsdom"
   },
   "peerDependencies": {
