@@ -10,21 +10,24 @@
     "build:dev": "webpack --config webpack/webpack.config.js --env mode=development",
     "build:prod": "webpack --config webpack/webpack.config.js --env mode=production",
     "build:analyze": "webpack --config webpack/webpack.config.js --env mode=development --env analyze=true",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
     "test": "jest --passWithNoTests",
     "docs": "typedoc --darkHighlightTheme dark-plus --out docs src/ts && touch docs/.nojekyll",
     "release": "npm run build:prod && npm publish"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joegasewicz/jg-design-system.git"
+    "url": "git+https://github.com/ONSdigital/dp-maps-js.git"
   },
-  "author": "jgasewicz",
+  "author": "ons-digital-publishing",
+  "contributors": [
+    "Joe Gasewicz <joegasewicz@gmail.com>"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/joegasewicz/jg-design-system/issues"
+    "url": "https://github.com/ONSdigital/dp-maps-js/issues"
   },
-  "homepage": "https://github.com/joegasewicz/jg-design-system#readme",
+  "homepage": "https://github.com/ONSdigital/dp-maps-js#readme",
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "@types/mapbox-gl": "^2.6.3",
