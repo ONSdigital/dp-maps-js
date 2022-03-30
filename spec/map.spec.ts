@@ -3,7 +3,6 @@ import { createDOM } from "./helpers";
 
 jest.mock("mapbox-gl", () => ({
     Map: jest.fn().mockImplementation((state) => {
-            console.log(state);
         return {
             dragRotate: {
                 disable: jest.fn(),
