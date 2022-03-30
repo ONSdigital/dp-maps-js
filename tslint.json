@@ -13,7 +13,8 @@
         "no-console": {
             "severity": "error",
             "options": ["log"]
-        }
+        },
+        "max-classes-per-file": false
     },
     "jsRules": {
         "max-line-length": {

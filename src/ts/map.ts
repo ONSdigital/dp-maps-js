@@ -4,9 +4,9 @@ import { ONSFullScreenControl, ONSResetControl, ONSZoomInControl, ONSZoomOutCont
 export interface IMapComponentOptions {
     /** Either url or path name */
     readonly style: string;
-    /** geolocation coordinates as a starting location for the map display.
-     *  If you are experiencing a jerky `flyTo` transition, start with a tested
-     * & working value of `[-1.2471735, 50.8625412]`.  */
+    /** geolocation coordinates as a starting location for the map display. */
+    /** If you are experiencing a jerky `flyTo` transition, start with a tested. */
+    /** & working value of `[-1.2471735, 50.8625412]`. */
     readonly center: LngLatLike;
     /** Optional - default 6 */
     zoom?: number;
@@ -23,14 +23,14 @@ export interface IMapComponentOptions {
  * ```
  *  npm i -S mapbox-gl
  * ```
- * 
+ *
  * And then import before importing this library.
  * @example
  * ```
  * import "mapbox-gl";
  * import { MapComponent as _MapComponent } from "dp-maps";
  * ```
- * 
+ *
  * To create an Ordnance Survey map component, pass the following options to the {@link MapComponent} class.
  * @example
  * ```
@@ -44,19 +44,19 @@ export interface IMapComponentOptions {
  *   const map = new _MapComponent(options);
  *   map.init();
  * ```
- * 
+ *
  * Define a HTML elements with an id value `map`.
  * @example
  * ```
  *   <divid="map">
  *          <div class="ons-map-control">
  *            <!-- controls... -->
- *          </div>    
+ *          </div>
  *   </div>
  * ```
- * 
+ *
  * To add a control, add a `button` element & a child element to render your icon. Buttons need
- * to be added to an element with a `.ons-ctrl-group` class name. You can add as many controls 
+ * to be added to an element with a `.ons-ctrl-group` class name. You can add as many controls
  * as required in each group.
  * @example
  * ```
@@ -69,7 +69,7 @@ export interface IMapComponentOptions {
  *    </button>
  * </div>
  * ```
- * 
+ *
  *  Example shows a map component with the 4 currently available controls.
  * @example
  * ```
@@ -151,10 +151,14 @@ export class MapComponent {
         onsZoomInControl.setup();
         const onsZoomOutControl = new ONSZoomOutControl(this.map, ".ons-ctrl-zoom-out");
         onsZoomOutControl.setup();
-        const onsResetControl = new ONSResetControl(this.map, ".ons-ctrl-reset", "mapboxgl-ctrl-icon--disabled", this.center, this.zoom);
+        const onsResetControl = new ONSResetControl(
+            this.map, ".ons-ctrl-reset",
+            "mapboxgl-ctrl-icon--disabled",
+            this.center, this.zoom,
+        );
         onsResetControl.setup();
         const onsFullScreenControl = new ONSFullScreenControl(this.map, ".ons-ctrl-fullscreen", "mapboxgl-ctrl-icon--fullscreen");
-        onsFullScreenControl.setup();        
+        onsFullScreenControl.setup();
     }
 
     private addEvents(): void {

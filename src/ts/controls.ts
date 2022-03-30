@@ -16,8 +16,8 @@ abstract class ONSControl  {
     public button!: HTMLButtonElement;
     public iconElement!: HTMLElement;
     public map: Map;
-    public state = new MapState;
-    
+    public state = new MapState();
+
     constructor(map: Map, btnSelector: string, btnClickedSelctor: string = "") {
        this.map = map;
        this.btnSelector = btnSelector;
