@@ -1,6 +1,6 @@
 {
   "name": "dp-maps-js",
-  "version": "0.1.0",
+  "version": "0.1.11",
   "description": "Reusable map component with support for Ordnance Survey tiles",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
