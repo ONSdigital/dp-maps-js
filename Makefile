@@ -17,7 +17,7 @@ build:
 	npm install
 	make lint
 	make test
-	# npm run build:prod
+	npm run build:prod
 
 .PHONY: debug
 debug:
