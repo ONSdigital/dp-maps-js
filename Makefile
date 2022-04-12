@@ -1,36 +1,35 @@
-BINPATH ?= lib
-
-BUILD_TIME=$(shell date +%s)
-GIT_COMMIT=$(shell git rev-parse HEAD)
-VERSION ?= $(shell git tag --points-at HEAD | grep ^v | head -n 1)
+.PHONY: node-modules
+node-modules:
+	npm install --unsafe-perm
 
 .PHONY: analyze
-analyze:
+analyze: node-modules
 	npm run build:analyze
 
+.PHONY: audit
+audit: node-modules
+	npm run audit
+
 .PHONY: lint
-lint:
+lint: node-modules
 	npm run lint
 
 .PHONY: build
-build:
-	npm install
-	make lint
-	make test
+build: node-modules
 	npm run build:prod
 
 .PHONY: debug
-debug:
+debug: node-modules
 	npm run build:dev
 
 .PHONY: test
-test:
+test: node-modules
 	npm run test
 
 .PHONY: docs
-docs:
+docs: node-modules
 	npm run docs
 
 .PHONY: release
-release:
+release: node-modules
 	npm run release

@@ -11,4 +11,4 @@ inputs:
   - name: dp-maps-js
 
 run:
-  path: dp-maps-js/ci/scripts/lint.sh
+  path: dp-maps-js/ci/scripts/audit.sh

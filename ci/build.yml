@@ -1,5 +1,4 @@
 ---
-
 platform: linux
 
 image_resource:
@@ -12,9 +11,7 @@ inputs:
   - name: dp-maps-js
 
 outputs:
-  - name: build
-  - name: package
-
+  - name: dp-maps-js
 
 run:
   path: dp-maps-js/ci/scripts/build.sh
