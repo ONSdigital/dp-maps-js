@@ -3,6 +3,18 @@ Reusable map component with support for Ordnance Survey tiles.
 
 ### Getting started
 
+#### Installation
+
+First snstall the [mapbox-gl](https://docs.mapbox.com/) peer dependency:
+```bash
+ npm i -S mapbox-gl
+```
+
+Install dp-maps-js library:
+```bash
+ npm i -S dp-maps-js
+```
+
 Read the [docs](https://onsdigital.github.io/dp-maps-js).
 # Usage
 Create an HTML element with a `map` id & include the following markup:
@@ -32,6 +44,15 @@ const options = {
     token: process.env.MAPBOX_ACCESS_TOKEN,
     mapID: "map",
 }
+const map = new _MapComponent(options);
+map.init();
+```
+#### Add bounds
+To add custom boundaries, use the `bounds` option. If the bounds come in a serialized
+form the use the `unMarshalBounds` function to unserialize. For example:
+```
+const bounds = MapComponent.unMarshalBounds(bounds);
+const options = { bounds, .etc... }
 const map = new _MapComponent(options);
 map.init();
 ```

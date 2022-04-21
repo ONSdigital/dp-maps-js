@@ -2,7 +2,7 @@
     "compilerOptions": {
         "lib": ["dom", "esnext"],
         "outDir": "lib",
-        "sourceMap": false, // set to true for source maps
+        "sourceMap": false,
         "noImplicitAny": false,
         "module": "es6",
         "target": "es5",
@@ -11,7 +11,7 @@
         "strict": true,
         "declaration": true,
         "esModuleInterop": true,
-        //"types": ["node_modules/@types", "jest"],
+        "resolveJsonModule": true,
     },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "spec"]
