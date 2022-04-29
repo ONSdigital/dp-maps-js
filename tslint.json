@@ -14,6 +14,7 @@
             "severity": "error",
             "options": ["log"]
         },
+        "jsdoc-format": false,
         "max-classes-per-file": false
     },
     "jsRules": {

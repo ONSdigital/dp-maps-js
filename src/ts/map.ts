@@ -1,6 +1,23 @@
-import { LngLatBoundsLike, LngLatLike, Map } from "mapbox-gl";
+import { FitBoundsOptions, LngLatBoundsLike, LngLatLike, Map } from "mapbox-gl";
 import { ONSFullScreenControl, ONSResetControl, ONSZoomInControl, ONSZoomOutControl } from "./controls";
+import { request } from "./utils";
 
+/** @internal **/
+export const _DEFAULT_BOUNDS: [LngLatLike, LngLatLike] = [
+    [-7.197902920595226, 49.80281964843661], // south-west
+    [2.1939240880979014, 55.490707526676545] // north-west
+];
+
+export interface IboundsJSONSchema {
+    features: {geometry: {coordinates: [[[LngLatBoundsLike]]]}}[];
+}
+
+export interface IMapPadding {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+}
 export interface IMapComponentOptions {
     /** Either url or path name */
     readonly style: string;
@@ -16,6 +33,15 @@ export interface IMapComponentOptions {
     readonly mapID?: string;
     /** Default false. Set to true for geoloation debugging logs  */
     readonly debug?: boolean;
+    /** Default set to United Kingdom bounds. */
+    /** Sets the bounding southwest and northeast points in longitude and latitude. */
+    /** Expects a serialized string. See {@link MapComponent.setBounds}*/
+    readonly bounds?: LngLatBoundsLike;
+    /** The URL to that serves the geo data */
+    readonly geoDataURL?: string;
+    /** Sets the bounds top, bottom, left, right padding with a positive number & */
+    /** reduces padding with a negative number. See {@link IMapPadding}. */
+    readonly padding?: IMapPadding;
 }
 /**
  *  You must install & call mapbox-gl as a peer dependency before instantiatint `MapComponent`.
@@ -94,15 +120,38 @@ export interface IMapComponentOptions {
  *       </div>
  *   </div>
  * ```
+ *
+ * To set bounds padding, use the {@link IMapPadding}. Each value accepts a number if positive will
+ * increase the areas bounds & a negative number which decreases the area bounds.
+ * @example
+ * ```
+ *   const padding: IMapPadding { top: 1, bottom: 1, left: -2, right: -1 };
+ *   const options = {
+ *       padding,
+ *       // .etc ...
+ *   }
+ *   const map = new _MapComponent(options);
+ *   map.init();
+ * ```
+ *
+ * To set the max bounds from an endpoint serving a geo data file, use the
+ * {@link IMapComponentOptions.geoDataURL} property with the URL serving a
+ * geo data JSON file.
+ * @example
+ * ```
+ * const options: IMapComponentOptions = {
+        geoDataURL: "<GEO_DATA_URL>",
+        // .etc ...
+    };
+ * ```
  */
 export class MapComponent {
     /** MapboxGL's main Map class */
     public readonly map: Map;
-    /** Map bounds  */
-    public readonly bounds: LngLatBoundsLike = [
-        [-7.9454024125535625, 48.95006696529006], // south-west
-        [2.549589409450192, 60.86791183866015] // north-west
-    ];
+    /** @internal */
+    private _bounds!: LngLatBoundsLike;
+    /** The default bounds returned if there are no bounds passed to the options or unmarshaling fails */
+    private defaultBounds: [LngLatLike, LngLatLike];
     public readonly style: string;
     /** geolocation coordinates as a starting location for the map display  */
     public readonly center: LngLatLike;
@@ -113,13 +162,18 @@ export class MapComponent {
     /** Default false. Set to true for geoloation debugging logs  */
     public debug: boolean = false;
 
+    public readonly geoDataURL?: string;
+
     constructor(options: IMapComponentOptions) {
-        const { style, center, zoom = 6, token, mapID, debug = false } = options;
+        const { style, center, zoom = 6, token, mapID, debug = false, bounds, geoDataURL, padding } = options;
+        this.defaultBounds = _DEFAULT_BOUNDS;
         this.style = style;
         this.center = center;
         this.zoom = zoom;
         this.mapID = mapID;
         this.debug = debug;
+        this.bounds = bounds;
+        this.geoDataURL = geoDataURL;
         this.map = new Map({
             container: this.mapID,
             style: this.style,
@@ -128,8 +182,20 @@ export class MapComponent {
             attributionControl: false,
             maxBounds: this.bounds,
             accessToken: token,
+            fitBoundsOptions: this.setBoundsOptions(padding),
         });
-        this.settings();
+    }
+
+    get bounds() {
+        return this._bounds;
+    }
+
+    set bounds(val: LngLatBoundsLike | undefined) {
+        if (!val) {
+            this._bounds = this.defaultBounds;
+        } else {
+            this._bounds = val;
+        }
     }
 
     /**
@@ -142,6 +208,10 @@ export class MapComponent {
      * ```
      */
     public init(): void {
+        if (typeof this.geoDataURL !== "undefined") {
+            this.setBoundsFromGeoData(this.geoDataURL);
+        }
+        this.settings();
         this.addControls();
         this.addEvents();
     }
@@ -168,10 +238,10 @@ export class MapComponent {
         });
 
         this.map.on("move", () => {
-            if (this.debug) {
-                console.debug("center: ", this.map.getCenter());
-                console.debug("zoom: ", this.map.getZoom());
-            }
+            // Debuging
+            this.log(`center: ${this.map.getCenter()}`);
+            this.log(`bounds: ${this.map.getBounds()}`);
+            this.log(`zoom: ${this.map.getZoom()}`);
         });
     }
 
@@ -179,4 +249,81 @@ export class MapComponent {
         this.map.dragRotate.disable();
         this.map.touchZoomRotate.disableRotation();
     }
+
+    /**
+     * @description Unmarshals multi-dimensional array string to LngLatBoundsLike type
+     * & returns the southwest and northeast points in longitude and latitude.
+     * Expects that a 2 deep nested array - eg. `[[ [LngLatLike, LngLatLike] ]]`
+     * @example
+     * ```
+     * const bounds = MapComponent.unMarshalBounds(bounds);
+     * const options = { bounds, .etc.. };
+     * ```
+     * @param bounds See {@link https://docs.mapbox.com/mapbox-gl-js/api/geography/#lnglatboundslike }
+     * @param debug Optional, default is false - logs the unserialized bounds.
+     */
+    public static unMarshalBounds(bounds: string, debug: boolean = false): [LngLatLike, LngLatLike] {
+        try {
+            let b = bounds.split("[[")[1];
+            if (b[0] !== "[") {
+                throw new Error(`Expected an unserialized type of [[ [LngLatLike, LngLatLike] ]] but got ${bounds}`);
+            }
+            b = b.split("]]")[0];
+            b = b.replace(/\s/g, "");
+            b = b.replace(/[\[\]]/g, "");
+            const bnds = b.split(",");
+            const south: number = +bnds[0];
+            const west: number = +bnds[1];
+            const north: number = +bnds[bnds.length -2];
+            const east: number = +bnds[bnds.length - 1];
+            if (debug) {
+                console.debug(`Unserialized bounds: ${JSON.stringify([[south, west], [north, east]])}`);
+            }
+            return [[south, west], [north, east]];
+        } catch(err: unknown) {
+            console.error("Failed to unMarshal bounds: ",err);
+            return _DEFAULT_BOUNDS;
+        }
+    }
+
+    /**
+     * @example
+     * Returns the correct `[LngLatLike, LngLatLike]` type expected
+     * by the `bounds` property on {@link IMapComponentOptions}
+     * ```
+     * let bounds = MapComponent.setBounds([-5.5, 58.5], [-0.3,  51.9])
+     * ```
+     * Otherwise set the {@link IMapComponentOptions.bounds} directly with value of `LngLatBoundsLike` type.
+     * @param southWest
+     * @param northWest
+     * @returns {[LngLatLike, LngLatLike]}
+     */
+    public static setBounds(southWest: LngLatLike, northWest: LngLatLike): [LngLatLike, LngLatLike] {
+        return [southWest, northWest];
+    }
+
+    private setBoundsFromGeoData(geoDataFileURL: string) {
+        request(geoDataFileURL)
+            .then((res: IboundsJSONSchema) => {
+                const coordinates: LngLatBoundsLike[] = res.features[0].geometry.coordinates[0][0];
+                const southWest = coordinates[0] as LngLatLike;
+                const northWest = coordinates[3] as LngLatLike;
+                this.log(`Setting bounds from ${[southWest, northWest]}`);
+                this.map.on("load", () => {
+                    this.map.setMaxBounds([southWest, northWest]);
+                });
+            })
+            .catch((err: unknown) => console.error(err));
+    }
+
+    private log(msg: string) {
+        if (this.debug) {
+            console.debug(msg)
+        }
+    }
+
+    private setBoundsOptions(padding?: IMapPadding): FitBoundsOptions {
+        return padding ? { padding } : {};
+    }
+
 }
