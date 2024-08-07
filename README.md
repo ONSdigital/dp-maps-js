@@ -1,4 +1,11 @@
 # dp-maps-js
+
+---
+
+:warning: This repository will be archived in August 2024 as it is no longer in development. :warning:
+
+---
+
 Reusable map component with support for Ordnance Survey tiles.
 
 ### Getting started
